@@ -1,0 +1,28 @@
+[
+    {
+        "username": "andrea",
+        "password": "Francesco@1",
+        "role": "admin"
+    },
+    {
+        "username": "test",
+        "password": "prova",
+        "role": "user",
+        "email": "",
+        "nome_cognome": "",
+        "scuola": "",
+        "telefono": "",
+        "data_nascita": "",
+        "indirizzo": "",
+        "citta": "",
+        "cap": "",
+        "account_status": "attivo",
+        "admin_note": ""
+    },
+    {
+        "username": "aanastasi",
+        "password": "Francesco@1",
+        "role": "user",
+        "created_at": "2026-02-27 19:03:04"
+    }
+]

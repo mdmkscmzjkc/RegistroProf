@@ -1,0 +1,18 @@
+[
+    {
+        "session_id": "kHnNp0C80p9sOgFynZLeTDDjI-z5AYnsI0Jmk1ksTtk",
+        "username": "test",
+        "ip": "127.0.0.1",
+        "login_time": "2026-02-28 12:26:08",
+        "last_activity": "2026-02-28 12:26:19",
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Sa"
+    },
+    {
+        "session_id": "GGSpzHbL8BwjjxT_EhJk36KXqb_jB03jgDE6YGvucOQ",
+        "username": "aanastasi",
+        "ip": "127.0.0.1",
+        "login_time": "2026-02-28 12:26:46",
+        "last_activity": "2026-02-28 12:26:46",
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Sa"
+    }
+]

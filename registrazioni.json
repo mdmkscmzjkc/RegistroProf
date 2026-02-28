@@ -1,0 +1,14 @@
+[
+    {
+        "id": 1,
+        "username": "prova",
+        "password": "123456",
+        "email": "anastasiandrea82@gmail.com",
+        "nome_cognome": "prova",
+        "scuola": "test",
+        "data_registrazione": "2026-02-28 12:25:05",
+        "stato": "approvato",
+        "admin_note": "",
+        "data_approvazione": "2026-02-28 12:25:26"
+    }
+]

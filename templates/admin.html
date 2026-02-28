@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Admin - Registro dei Prof</title>
+<style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: #f5f7fa; }
+    header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    header h1 { margin: 0; font-size: 24px; }
+    header .user-info { display: flex; align-items: center; gap: 15px; }
+    header .user-info span { opacity: 0.9; }
+    header button { background: #e74c3c; border: none; color: white; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.3s; }
+    header button:hover { background: #c0392b; transform: translateY(-2px); }
+    .container { display: flex; min-height: calc(100vh - 70px); }
+    .sidebar { width: 260px; background: linear-gradient(180deg, #2c3e50 0%, #1a252f 100%); color: white; padding: 20px 0; position: fixed; height: 100vh; overflow-y: auto; }
+    .sidebar h3 { padding: 0 20px 20px; margin: 0; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 16px; opacity: 0.8; }
+    .sidebar nav { padding: 10px 0; }
+    .sidebar a { display: flex; align-items: center; padding: 14px 20px; color: rgba(255,255,255,0.8); text-decoration: none; transition: 0.3s; border-left: 4px solid transparent; }
+    .sidebar a:hover, .sidebar a.active { background: rgba(255,255,255,0.1); color: white; border-left-color: #4CAF50; }
+    .sidebar a span { margin-left: 12px; }
+    .main-content { margin-left: 260px; flex: 1; padding: 30px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
+    .stat-card { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: 0.3s; cursor: pointer; }
+    .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.12); }
+    .stat-card .icon { font-size: 32px; margin-bottom: 10px; }
+    .stat-card .number { font-size: 32px; font-weight: bold; color: #333; }
+    .stat-card .label { color: #888; font-size: 14px; margin-top: 5px; }
+    .stat-card.purple { border-left: 4px solid #667eea; }
+    .stat-card.green { border-left: 4px solid #4CAF50; }
+    .stat-card.orange { border-left: 4px solid #FF9800; }
+    .stat-card.blue { border-left: 4px solid #2196F3; }
+    section { display: none; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 30px; }
+    section.active { display: block; }
+    section h2 { margin: 0 0 20px 0; color: #333; display: flex; align-items: center; gap: 10px; }
+    .table-container { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid #eee; }
+    th { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: 600; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
+    tr:hover { background: #f8f9fa; }
+    tr:last-child td { border-bottom: none; }
+    .btn { padding: 8px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.3s; margin-right: 5px; }
+    .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102,126,234,0.4); }
+    .btn-success { background: #4CAF50; color: white; }
+    .btn-success:hover { background: #45a049; }
+    .btn-warning { background: #FF9800; color: white; }
+    .btn-warning:hover { background: #f57c00; }
+    .btn-danger { background: #f44336; color: white; }
+    .btn-danger:hover { background: #d32f2f; }
+    .btn-info { background: #2196F3; color: white; }
+    .btn-info:hover { background: #1976D2; }
+    .btn-sm { padding: 6px 12px; font-size: 13px; }
+    .filter-input { padding: 12px 16px; border: 2px solid #e0e0e0; border-radius: 10px; width: 300px; margin-bottom: 20px; font-size: 14px; transition: 0.3s; }
+    .filter-input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
+    .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 2000; animation: fadeIn 0.2s ease; }
+    .modal.active { display: flex; }
+    .modal-content { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 450px; box-shadow: 0 25px 50px rgba(0,0,0,0.25); animation: slideUp 0.3s ease; }
+    .modal-content.large { max-width: 800px; }
+    .modal-content h3 { margin: 0 0 20px 0; color: #333; }
+    .modal-content input, .modal-content select, .modal-content textarea { width: 100%; padding: 12px 16px; margin: 8px 0; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 14px; transition: 0.3s; }
+    .modal-content input:focus, .modal-content select:focus, .modal-content textarea:focus { outline: none; border-color: #667eea; }
+    .modal-content textarea { min-height: 100px; resize: vertical; }
+    .modal-content .btn-group { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .badge-admin { background: #ffebee; color: #c62828; }
+    .badge-user { background: #e3f2fd; color: #1565c0; }
+    .badge-pending { background: #fff3cd; color: #856404; }
+    .badge-resolved { background: #d4edda; color: #155724; }
+    .badge-dismissed { background: #f8d7da; color: #721c24; }
+    .badge-attivo { background: #e8f5e9; color: #2e7d32; }
+    .badge-sospeso { background: #fff3e0; color: #ef6c00; }
+    .badge-bannato { background: #ffebee; color: #c62828; }
+    #toast { position: fixed; bottom: 30px; right: 30px; background: #333; color: white; padding: 14px 24px; border-radius: 10px; z-index: 9999; opacity: 0; transition: 0.3s; pointer-events: none; }
+    #toast.show { opacity: 1; transform: translateY(-10px); }
+    #toast.success { background: #4CAF50; }
+    #toast.error { background: #f44336; }
+    
+    /* NOTIFICHE ADMIN */
+    .notifiche-container { position: relative; display: inline-block; }
+    .btn-notifiche { background: rgba(255,255,255,0.2); width: 45px; height: 45px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.3); cursor: pointer; font-size: 20px; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; }
+    .btn-notifiche:hover { background: rgba(255,255,255,0.3); transform: scale(1.1); }
+    .badge-notifiche { position: absolute; top: -5px; right: -5px; background: #f44336; color: white; border-radius: 50%; padding: 3px 7px; font-size: 11px; font-weight: bold; min-width: 20px; text-align: center; animation: pulse 2s infinite; }
+    .badge-notifiche.nascosto { display: none; }
+    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+    .dropdown-notifiche { display: none; position: absolute; right: 0; top: 55px; background: white; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); min-width: 380px; max-height: 450px; overflow-y: auto; z-index: 1000; animation: slideDown 0.3s ease; }
+    .dropdown-notifiche.aperto { display: block; }
+    .dropdown-notifiche h3 { margin: 0; padding: 18px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 15px 15px 0 0; font-size: 16px; font-weight: 600; }
+    .notifica-item { padding: 18px 20px; border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: all 0.3s ease; }
+    .notifica-item:hover { background: linear-gradient(90deg, #f5f7fa 0%, #fff 100%); transform: translateX(5px); }
+    .notifica-item.nuova { background: linear-gradient(90deg, #e3f2fd 0%, #fff 100%); border-left: 4px solid #2196F3; }
+    .notifica-item.letta { opacity: 0.7; }
+    .notifica-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .notifica-tipo { font-size: 10px; padding: 3px 10px; border-radius: 12px; font-weight: 700; text-transform: uppercase; }
+    .notifica-tipo.ticket { background: #e3f2fd; color: #1565c0; }
+    .notifica-tipo.registrazione { background: #fff3e0; color: #ef6c00; }
+    .notifica-tipo.segnalazione { background: #ffebee; color: #c62828; }
+    .notifica-tipo.sistema { background: #f3e5f5; color: #7b1fa2; }
+    .notifica-titolo { font-weight: 600; color: #333; margin-bottom: 6px; font-size: 14px; }
+    .notifica-messaggio { font-size: 13px; color: #666; margin-bottom: 8px; line-height: 1.5; }
+    .notifica-data { font-size: 11px; color: #999; }
+    .notifica-azioni { display: flex; gap: 8px; margin-top: 12px; }
+    .notifica-azioni button { padding: 6px 14px; font-size: 11px; border-radius: 20px; }
+    .nessuna-notifica { padding: 40px 20px; text-align: center; color: #999; font-size: 14px; }
+    .segna-tutte-lette { padding: 15px 20px; text-align: center; border-top: 2px solid #f0f0f0; }
+    .segna-tutte-lette button { background: transparent; color: #667eea; border: 2px solid #667eea; padding: 8px 20px; border-radius: 25px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
+    .segna-tutte-lette button:hover { background: #667eea; color: white; transform: translateY(-2px); }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+    
+    /* TICKET ADMIN */
+    .priorita-bassa { color: #4CAF50; font-weight: 600; }
+    .priorita-media { color: #FF9800; font-weight: 600; }
+    .priorita-alta { color: #ff5722; font-weight: 600; }
+    .priorita-urgente { color: #f44336; font-weight: 600; }
+    .stato-aperto { background: #e3f2fd; color: #1565c0; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .stato-in_lavorazione { background: #fff3e0; color: #ef6c00; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .stato-risolto { background: #e8f5e9; color: #2e7d32; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .stato-chiuso { background: #f5f5f5; color: #616161; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .risposta-item { background: #f5f7fa; padding: 15px; margin: 10px 0; border-radius: 10px; border-left: 4px solid #667eea; }
+    .risposta-item.admin { border-left-color: #f5576c; }
+    .risposta-header { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 12px; color: #666; }
+    .risposta-messaggio { color: #333; line-height: 1.6; }
+    
+    /* SCHEDA ANAGRAFICA */
+    .anagrafica-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 20px; }
+    .anagrafica-card { background: #f8f9fa; padding: 20px; border-radius: 12px; border-left: 4px solid #667eea; }
+    .anagrafica-card h4 { margin: 0 0 15px 0; color: #333; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .anagrafica-card .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e0e0e0; }
+    .anagrafica-card .info-row:last-child { border-bottom: none; }
+    .anagrafica-card .label { color: #666; font-size: 13px; }
+    .anagrafica-card .value { color: #333; font-weight: 600; font-size: 14px; }
+    .anagrafica-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 20px; }
+    .anagrafica-stat { background: white; padding: 15px; border-radius: 10px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+    .anagrafica-stat .number { font-size: 28px; font-weight: bold; color: #667eea; }
+    .anagrafica-stat .label { font-size: 12px; color: #666; margin-top: 5px; }
+</style>
+</head>
+<body>
+
+<header>
+    <h1>⚙️ Dashboard Admin</h1>
+    <div class="user-info">
+        <div class="notifiche-container">
+            <button class="btn-notifiche" onclick="toggleNotifiche()" title="Notifiche">🔔</button>
+            <span id="badgeNotifiche" class="badge-notifiche nascosto">0</span>
+            <div id="dropdownNotifiche" class="dropdown-notifiche">
+                <h3>🔔 Notifiche</h3>
+                <div id="listaNotifiche"></div>
+                <div class="segna-tutte-lette">
+                    <button onclick="segnaTutteLette()">✅ Segna tutte come lette</button>
+                </div>
+            </div>
+        </div>
+        <span>👤 {{ username }}</span>
+        <button onclick="window.location.href='/logout'">🚪 Logout</button>
+    </div>
+</header>
+
+<div class="container">
+    <aside class="sidebar">
+        <h3>MENU</h3>
+        <nav>
+            <a href="#" class="active" onclick="apriSection('voti', this); return false;">📊 <span>Voti</span></a>
+            <a href="#" onclick="apriSection('recensioni', this); return false;">💬 <span>Recensioni</span></a>
+            <a href="#" onclick="apriSection('professori', this); return false;">👨‍🏫 <span>Professori</span></a>
+            <a href="#" onclick="apriSection('utenti', this); return false;">👥 <span>Utenti</span></a>
+            <a href="#" onclick="apriSection('registrazioni', this); return false;">📋 <span>Registrazioni <span id="badgeRegistrazioni" class="badge badge-pending" style="display:none;">0</span></span></a>
+            <a href="#" onclick="apriSection('ticket', this); return false;">🎫 <span>Ticket Supporto <span id="badgeTicket" class="badge badge-pending" style="display:none;">0</span></span></a>
+            <a href="#" onclick="apriSection('sessioni', this); return false;">🔐 <span>Sessioni Attive</span></a>
+            <a href="#" onclick="apriSection('segnalazioni', this); return false;">🚩 <span>Segnalazioni <span id="badgeSegnalazioni" class="badge badge-admin" style="display:none;">0</span></span></a>
+        </nav>
+    </aside>
+    
+    <main class="main-content">
+        <div class="stats-grid">
+            <div class="stat-card purple"><div class="icon">👨‍🏫</div><div class="number" id="statProfessori">0</div><div class="label">Professori</div></div>
+            <div class="stat-card green"><div class="icon">⭐</div><div class="number" id="statVoti">0</div><div class="label">Voti Totali</div></div>
+            <div class="stat-card orange"><div class="icon">💬</div><div class="number" id="statRecensioni">0</div><div class="label">Recensioni</div></div>
+            <div class="stat-card blue"><div class="icon">👥</div><div class="number" id="statUtenti">0</div><div class="label">Utenti</div></div>
+        </div>
+        
+        <section id="voti" class="active">
+            <h2>📊 Gestione Voti</h2>
+            <input type="text" class="filter-input" placeholder="🔍 Cerca voto..." oninput="filtraVoti()">
+            <div class="table-container"><table id="tabellaVoti"><thead><tr><th>Utente</th><th>Professore</th><th>Materia</th><th>Scuola</th><th>Voto</th><th>Azioni</th></tr></thead><tbody></tbody></table></div>
+        </section>
+        
+        <section id="recensioni">
+            <h2>💬 Gestione Recensioni</h2>
+            <input type="text" class="filter-input" placeholder="🔍 Cerca recensione..." oninput="filtraRecensioni()">
+            <div class="table-container"><table id="tabellaRecensioni"><thead><tr><th>Utente</th><th>Professore</th><th>Recensione</th><th>Azioni</th></tr></thead><tbody></tbody></table></div>
+        </section>
+        
+        <section id="professori">
+            <h2>👨‍🏫 Gestione Professori</h2>
+            <button class="btn btn-primary" onclick="apriModalProf()">➕ Aggiungi Professore</button>
+            <input type="text" class="filter-input" placeholder="🔍 Cerca professore..." oninput="filtraProfessori()" style="margin-left: 10px;">
+            <div class="table-container"><table id="tabellaProfessori"><thead><tr><th>Nome</th><th>Materia</th><th>Scuola</th><th>Azioni</th></tr></thead><tbody></tbody></table></div>
+        </section>
+        
+        <section id="utenti">
+            <h2>👥 Gestione Utenti</h2>
+            <button class="btn btn-primary" onclick="apriModalUtente()">➕ Nuovo Utente</button>
+            <input type="text" class="filter-input" placeholder="🔍 Cerca utente..." oninput="filtraUtenti()" style="margin-left: 10px;">
+            <div class="table-container"><table id="tabellaUtenti"><thead><tr><th>Username</th><th>Ruolo</th><th>Data Registrazione</th><th>Voti</th><th>Recensioni</th><th>Azioni</th></tr></thead><tbody></tbody></table></div>
+        </section>
+        
+        <section id="registrazioni">
+            <h2>📋 Richieste di Registrazione</h2>
+            <p style="color:#666; margin-bottom:20px;">Gestisci le richieste di nuovi utenti in attesa di approvazione.</p>
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <button class="btn btn-primary" onclick="caricaRegistrazioni()">🔄 Aggiorna</button>
+                <span id="countRegistrazioni" class="badge badge-pending" style="display:none;">0 in attesa</span>
+            </div>
+            <div class="table-container"><table id="tabellaRegistrazioni"><thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Nome</th><th>Scuola</th><th>Data</th><th>Stato</th><th>Azioni</th></tr></thead><tbody></tbody></table></div>
+        </section>
+        
+        <section id="ticket">
+            <h2>🎫 Gestione Ticket Supporto</h2>
+            <p style="color:#666; margin-bottom:20px;">Gestisci le richieste di supporto degli utenti. Rispondere è opzionale.</p>
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <button class="btn btn-primary" onclick="caricaTicketAdmin()">🔄 Aggiorna</button>
+                <span id="countTicketAperti" class="badge badge-pending" style="display:none;">0 aperti</span>
+            </div>
+            <div class="table-container">
+                <table id="tabellaTicketAdmin">
+                    <thead>
+                        <tr><th>ID</th><th>Utente</th><th>Oggetto</th><th>Priorità</th><th>Stato</th><th>Data</th><th>Azioni</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+        
+        <section id="sessioni">
+            <h2>🔐 Sessioni Attive</h2>
+            <p style="color:#666; margin-bottom:20px;">Monitora gli utenti loggati e termina sessioni sospette.</p>
+            <button class="btn btn-primary" onclick="caricaSessioni()">🔄 Aggiorna</button>
+            <div class="table-container"><table id="tabellaSessioni"><thead><tr><th>Utente</th><th>IP</th><th>Login</th><th>Ultima Attività</th><th>Dispositivo</th><th>Azioni</th></tr></thead><tbody></tbody></table></div>
+        </section>
+        
+        <section id="segnalazioni">
+            <h2>🚩 Segnalazioni Utenti</h2>
+            <p style="color:#666; margin-bottom:20px;">Gestisci le segnalazioni di contenuti inappropriati.</p>
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <button class="btn btn-primary" onclick="caricaSegnalazioni()">🔄 Aggiorna</button>
+                <span id="countSegnalazioni" class="badge badge-admin" style="display:none;">0 nuove</span>
+            </div>
+            <div class="table-container"><table id="tabellaSegnalazioni"><thead><tr><th>ID</th><th>Tipo</th><th>Segnalatore</th><th>Motivo</th><th>Data</th><th>Stato</th><th>Azioni</th></tr></thead><tbody></tbody></table></div>
+        </section>
+    </main>
+</div>
+
+<!-- Modal Professore -->
+<div class="modal" id="modalProf">
+    <div class="modal-content">
+        <h3 id="titoloModalProf">➕ Aggiungi Professore</h3>
+        <input type="text" id="formNomeProf" placeholder="Nome Professore">
+        <input type="text" id="formMateriaProf" placeholder="Materia">
+        <input type="text" id="formScuolaProf" placeholder="Scuola">
+        <div class="btn-group">
+            <button class="btn btn-danger" onclick="chiudiModalProf()">Annulla</button>
+            <button class="btn btn-success" onclick="salvaProfessore()">Salva</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Utente -->
+<div class="modal" id="modalUtente">
+    <div class="modal-content">
+        <h3 id="titoloModalUtente">➕ Nuovo Utente</h3>
+        <input type="text" id="formUsername" placeholder="Username">
+        <input type="password" id="formPassword" placeholder="Password">
+        <select id="formRuolo">
+            <option value="user">Utente Normale</option>
+            <option value="admin">Admin</option>
+        </select>
+        <div class="btn-group">
+            <button class="btn btn-danger" onclick="chiudiModalUtente()">Annulla</button>
+            <button class="btn btn-success" onclick="salvaUtente()">Salva</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Modifica Credenziali Utente -->
+<div class="modal" id="modalCredenziali">
+    <div class="modal-content">
+        <h3 id="titoloModalCredenziali">✏️ Modifica Credenziali</h3>
+        <p style="color:#666; margin-bottom:15px; font-size:14px;">Utente: <strong id="credUsernameCorrente"></strong></p>
+        <label style="display:block; text-align:left; font-size:13px; margin:10px 0 5px; color:#555;">Nuovo Username (opzionale)</label>
+        <input type="text" id="formNuovoUsername" placeholder="Lascia vuoto per non cambiare">
+        <label style="display:block; text-align:left; font-size:13px; margin:10px 0 5px; color:#555;">Nuova Password (opzionale)</label>
+        <input type="password" id="formNuovaPassword" placeholder="Lascia vuoto per non cambiare">
+        <p style="color:#999; font-size:11px; margin:10px 0;">⚠️ Lascia vuoto il campo che non vuoi modificare</p>
+        <div class="btn-group">
+            <button class="btn btn-danger" onclick="chiudiModalCredenziali()">Annulla</button>
+            <button class="btn btn-success" onclick="salvaCredenzialiUtente()">Salva</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Scheda Anagrafica Utente -->
+<div class="modal" id="modalAnagrafica">
+    <div class="modal-content large">
+        <h3 id="titoloModalAnagrafica">📋 Scheda Anagrafica Utente</h3>
+        
+        <div id="anagraficaContent">
+            <!-- Caricato dinamicamente -->
+        </div>
+        
+        <div class="btn-group">
+            <button class="btn btn-secondary" onclick="chiudiModalAnagrafica()">Chiudi</button>
+            <button class="btn btn-warning" onclick="abilitaModificaAnagrafica()">✏️ Modifica</button>
+            <button class="btn btn-success" onclick="salvaAnagrafica()" style="display:none;" id="btnSalvaAnagrafica">💾 Salva</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Modifica Registrazione -->
+<div class="modal" id="modalRegistrazione">
+    <div class="modal-content">
+        <h3 id="titoloModalRegistrazione">✏️ Modifica Registrazione</h3>
+        <input type="hidden" id="formRegId">
+        <label style="display:block; text-align:left; font-size:13px; margin:10px 0 5px; color:#555;">Username</label>
+        <input type="text" id="formRegUsername" placeholder="Username">
+        <label style="display:block; text-align:left; font-size:13px; margin:10px 0 5px; color:#555;">Email</label>
+        <input type="email" id="formRegEmail" placeholder="Email">
+        <label style="display:block; text-align:left; font-size:13px; margin:10px 0 5px; color:#555;">Nome e Cognome</label>
+        <input type="text" id="formRegNome" placeholder="Nome e Cognome">
+        <label style="display:block; text-align:left; font-size:13px; margin:10px 0 5px; color:#555;">Scuola</label>
+        <input type="text" id="formRegScuola" placeholder="Scuola">
+        <label style="display:block; text-align:left; font-size:13px; margin:10px 0 5px; color:#555;">Password (lascia vuoto per non cambiare)</label>
+        <input type="password" id="formRegPassword" placeholder="Nuova password">
+        <div class="btn-group">
+            <button class="btn btn-danger" onclick="chiudiModalRegistrazione()">Annulla</button>
+            <button class="btn btn-success" onclick="salvaModificaRegistrazione()">Salva</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Dettaglio Ticket Admin -->
+<div class="modal" id="modalTicketAdmin">
+    <div class="modal-content" style="max-width: 700px;">
+        <h3 id="ticketAdminTitolo">🎫 Dettaglio Ticket</h3>
+        <div id="ticketAdminInfo" style="margin: 20px 0; padding: 20px; background: #f5f7fa; border-radius: 10px;"></div>
+        <div id="ticketAdminRisposte" style="margin: 20px 0; max-height: 300px; overflow-y: auto;"></div>
+        <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
+            <h4 style="margin: 0 0 15px 0;">💬 Rispondi (Opzionale)</h4>
+            <div class="form-group">
+                <label style="display:block; margin-bottom: 5px; color:#555; font-weight: 600;">La tua risposta:</label>
+                <textarea id="ticketAdminRisposta" placeholder="Scrivi la tua risposta... (lascia vuoto se non vuoi rispondere)" style="width:100%; padding:12px; border:2px solid #e0e0e0; border-radius:10px; font-size:14px; min-height:100px;"></textarea>
+            </div>
+            <div class="form-group">
+                <label style="display:block; margin-bottom: 5px; color:#555; font-weight: 600;">Cambia stato (opzionale):</label>
+                <select id="ticketAdminStato">
+                    <option value="aperto">🔵 Aperto</option>
+                    <option value="in_lavorazione">🟡 In lavorazione</option>
+                    <option value="risolto">🟢 Risolto</option>
+                    <option value="chiuso">⚫ Chiuso</option>
+                </select>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="chiudiTicketAdmin()">Chiudi</button>
+                <button class="btn btn-success" onclick="rispondiTicketAdmin()">💬 Invia Risposta</button>
+            </div>
+            <p style="color:#999; font-size:12px; margin-top: 10px;">ℹ️ Puoi rispondere, cambiare stato, o semplicemente chiudere. Nessuna azione è obbligatoria.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Modifica Voto -->
+<div class="modal" id="modalVoto">
+    <div class="modal-content">
+        <h3>✏️ Modifica Voto</h3>
+        <input type="text" id="formVotoProf" placeholder="Professore" readonly>
+        <input type="text" id="formVotoMateria" placeholder="Materia" readonly>
+        <input type="number" id="formVotoValore" placeholder="Voto (1-10)" min="1" max="10">
+        <div class="btn-group">
+            <button class="btn btn-danger" onclick="chiudiModalVoto()">Annulla</button>
+            <button class="btn btn-success" onclick="salvaModificaVoto()">Salva</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Modifica Recensione -->
+<div class="modal" id="modalRecensione">
+    <div class="modal-content">
+        <h3>✏️ Modifica Recensione</h3>
+        <input type="text" id="formRecProf" placeholder="Professore" readonly>
+        <textarea id="formRecTesto" placeholder="Recensione" style="width:100%; padding:12px; margin:8px 0; border:2px solid #e0e0e0; border-radius:10px; font-size:14px; min-height:100px;"></textarea>
+        <div class="btn-group">
+            <button class="btn btn-danger" onclick="chiudiModalRecensione()">Annulla</button>
+            <button class="btn btn-success" onclick="salvaModificaRecensione()">Salva</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast"></div>
+
+<script>
+// ================= CONFIGURAZIONE =================
+const API_BASE = "";
+let editIndex = null;
+let editCredIndex = null;
+let editRegId = null;
+let ticketAdminCorrenteId = null;
+let anagraficaIndex = null;
+let anagraficaModificaAbilitata = false;
+let datiCorrenti = { professori: [], voti: [], recensioni: [], utenti: [] };
+
+// ================= TOAST =================
+function mostraToast(messaggio, tipo = 'success') {
+    const toast = document.getElementById('toast');
+    toast.textContent = messaggio;
+    toast.className = tipo + ' show';
+    setTimeout(() => toast.className = '', 3000);
+}
+
+// ================= NAVIGAZIONE =================
+function apriSection(id, link) {
+    document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+    if(link) link.classList.add('active');
+    if(id === 'voti') caricaVoti();
+    else if(id === 'recensioni') caricaRecensioni();
+    else if(id === 'professori') caricaProfessori();
+    else if(id === 'utenti') caricaUtenti();
+    else if(id === 'registrazioni') caricaRegistrazioni();
+    else if(id === 'ticket') caricaTicketAdmin();
+    else if(id === 'sessioni') caricaSessioni();
+    else if(id === 'segnalazioni') caricaSegnalazioni();
+    aggiornaStats();
+}
+
+// ================= STATISTICHE =================
+function aggiornaStats() {
+    document.getElementById('statProfessori').textContent = datiCorrenti.professori.length;
+    document.getElementById('statVoti').textContent = datiCorrenti.voti.length;
+    document.getElementById('statRecensioni').textContent = datiCorrenti.recensioni.length;
+    document.getElementById('statUtenti').textContent = datiCorrenti.utenti.length;
+}
+
+// 🔔 ================= NOTIFICHE ADMIN =================
+function toggleNotifiche() {
+    const dropdown = document.getElementById('dropdownNotifiche');
+    dropdown.classList.toggle('aperto');
+    if(dropdown.classList.contains('aperto')) {
+        caricaNotificheAdmin();
+    }
+}
+
+async function caricaNotificheAdmin() {
+    try {
+        const response = await fetch(`${API_BASE}/api/notifiche`);
+        const notifiche = await response.json();
+        const lista = document.getElementById('listaNotifiche');
+        const nonLetto = notifiche.filter(n => !n.letta).length;
+        const badge = document.getElementById('badgeNotifiche');
+        if(nonLetto > 0) {
+            badge.textContent = nonLetto > 99 ? '99+' : nonLetto;
+            badge.classList.remove('nascosto');
+        } else {
+            badge.classList.add('nascosto');
+        }
+        if(notifiche.length === 0) {
+            lista.innerHTML = '<div class="nessuna-notifica">🎉 Nessuna notifica</div>';
+            return;
+        }
+        lista.innerHTML = notifiche.map(n => `
+            <div class="notifica-item ${n.letta ? 'letta' : 'nuova'}" onclick="apriNotificaAdmin(${n.id})">
+                <div class="notifica-header">
+                    <span class="notifica-tipo ${n.tipo}">${n.tipo}</span>
+                    <span class="notifica-data">${n.data}</span>
+                </div>
+                <div class="notifica-titolo">${n.titolo}</div>
+                <div class="notifica-messaggio">${n.messaggio}</div>
+                ${n.link ? `<div class="notifica-azioni"><button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); window.location.href='${n.link}'">👁️ Vedi</button></div>` : ''}
+            </div>
+        `).join('');
+    } catch(e) { console.error("Errore caricaNotificheAdmin:", e); }
+}
+
+async function apriNotificaAdmin(id) {
+    try {
+        await fetch(`${API_BASE}/api/notifiche/${id}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ letta: true })
+        });
+        caricaNotificheAdmin();
+    } catch(e) { console.error("Errore apriNotificaAdmin:", e); }
+}
+
+async function segnaTutteLette() {
+    try {
+        await fetch(`${API_BASE}/api/notifiche/segna-tutte-lette`, { method: 'POST' });
+        caricaNotificheAdmin();
+        mostraToast('✅ Tutte le notifiche segnate come lette');
+    } catch(e) { console.error("Errore segnaTutteLette:", e); }
+}
+
+document.addEventListener('click', (e) => {
+    const container = document.querySelector('.notifiche-container');
+    const dropdown = document.getElementById('dropdownNotifiche');
+    if(!container.contains(e.target) && dropdown.classList.contains('aperto')) {
+        dropdown.classList.remove('aperto');
+    }
+});
+
+// ================= PROFESSORI =================
+function caricaProfessori() { fetch(`${API_BASE}/api/professori`).then(r => r.json()).then(data => { datiCorrenti.professori = data; renderProfessori(); }); }
+function renderProfessori() { const tbody = document.querySelector('#tabellaProfessori tbody'); tbody.innerHTML = ''; datiCorrenti.professori.forEach((p, i) => { const row = tbody.insertRow(); row.innerHTML = `<td>${p.nome||''}</td><td>${p.materia||''}</td><td>${p.scuola||''}</td><td><button class="btn btn-warning btn-sm" onclick="modificaProfessore(${i})">✏️</button><button class="btn btn-danger btn-sm" onclick="eliminaProfessore(${i})">🗑️</button></td>`; }); }
+function apriModalProf() { editIndex = null; document.getElementById('titoloModalProf').textContent = '➕ Aggiungi Professore'; document.getElementById('formNomeProf').value = ''; document.getElementById('formMateriaProf').value = ''; document.getElementById('formScuolaProf').value = ''; document.getElementById('modalProf').classList.add('active'); }
+function chiudiModalProf() { document.getElementById('modalProf').classList.remove('active'); }
+function salvaProfessore() { const nome = document.getElementById('formNomeProf').value.trim(); const materia = document.getElementById('formMateriaProf').value.trim(); const scuola = document.getElementById('formScuolaProf').value.trim(); if(!nome || !materia || !scuola) { mostraToast('⚠️ Compila tutti i campi!', 'error'); return; } const url = editIndex === null ? '/api/professori' : `/api/professori/${editIndex}`; const method = editIndex === null ? 'POST' : 'PUT'; fetch(url, { method: method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify({nome, materia, scuola}) }).then(r => r.json()).then(data => { if(data.success) { chiudiModalProf(); caricaProfessori(); mostraToast('✅ Professore salvato!'); } else mostraToast('❌ ' + (data.error || 'Errore'), 'error'); }); }
+function modificaProfessore(i) { editIndex = i; const p = datiCorrenti.professori[i]; document.getElementById('titoloModalProf').textContent = '✏️ Modifica Professore'; document.getElementById('formNomeProf').value = p.nome||''; document.getElementById('formMateriaProf').value = p.materia||''; document.getElementById('formScuolaProf').value = p.scuola||''; document.getElementById('modalProf').classList.add('active'); }
+function eliminaProfessore(i) { if(!confirm('⚠️ Eliminare questo professore?')) return; fetch(`/api/professori/${i}`, {method: 'DELETE'}).then(r => r.json()).then(data => { if(data.success) { caricaProfessori(); mostraToast('✅ Eliminato!'); } }); }
+function filtraProfessori() { const q = event.target.value.toLowerCase(); document.querySelectorAll('#tabellaProfessori tbody tr').forEach(row => { row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none'; }); }
+
+// ================= VOTI =================
+function caricaVoti() { fetch(`${API_BASE}/api/voti`).then(r => r.json()).then(data => { datiCorrenti.voti = data; renderVoti(); }); }
+function renderVoti() { const tbody = document.querySelector('#tabellaVoti tbody'); tbody.innerHTML = ''; datiCorrenti.voti.forEach((v, i) => { const row = tbody.insertRow(); row.innerHTML = `<td>${v.user||v.utente||'Anonimo'}</td><td>${v.nomeProf||v.nome_professore||''}</td><td>${v.materia||''}</td><td>${v.scuola||''}</td><td><strong>${v.voto||'-'}</strong></td><td><button class="btn btn-warning btn-sm" onclick="modificaVoto(${i})">✏️</button><button class="btn btn-danger btn-sm" onclick="eliminaVoto(${i})">🗑️</button></td>`; }); }
+function apriModalVoto(i) { editIndex = i; const v = datiCorrenti.voti[i]; document.getElementById('formVotoProf').value = v.nomeProf||v.nome_professore||''; document.getElementById('formVotoMateria').value = v.materia||''; document.getElementById('formVotoValore').value = v.voto||''; document.getElementById('modalVoto').classList.add('active'); }
+function chiudiModalVoto() { document.getElementById('modalVoto').classList.remove('active'); }
+function modificaVoto(i) { apriModalVoto(i); }
+function salvaModificaVoto() { const voto = document.getElementById('formVotoValore').value; if(!voto || voto < 1 || voto > 10) { mostraToast('⚠️ Voto deve essere 1-10!', 'error'); return; } fetch(`/api/voti/${editIndex}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({voto: parseInt(voto)}) }).then(r => r.json()).then(data => { if(data.success) { chiudiModalVoto(); caricaVoti(); mostraToast('✅ Voto aggiornato!'); } else mostraToast('❌ Errore', 'error'); }); }
+function eliminaVoto(i) { if(!confirm('⚠️ Eliminare questo voto?')) return; fetch(`/api/voti/${i}`, {method: 'DELETE'}).then(r => r.json()).then(data => { if(data.success) { caricaVoti(); mostraToast('✅ Eliminato!'); } }); }
+function filtraVoti() { const q = event.target.value.toLowerCase(); document.querySelectorAll('#tabellaVoti tbody tr').forEach(row => { row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none'; }); }
+
+// ================= RECENSIONI =================
+function caricaRecensioni() { fetch(`${API_BASE}/api/recensioni`).then(r => r.json()).then(data => { datiCorrenti.recensioni = data; renderRecensioni(); }); }
+function renderRecensioni() { const tbody = document.querySelector('#tabellaRecensioni tbody'); tbody.innerHTML = ''; datiCorrenti.recensioni.forEach((r, i) => { const row = tbody.insertRow(); row.innerHTML = `<td>${r.user||r.utente||'Anonimo'}</td><td>${r.nomeProfRec||r.nome_professore||''}</td><td>${r.recensione||r.testo||''}</td><td><button class="btn btn-warning btn-sm" onclick="modificaRecensione(${i})">✏️</button><button class="btn btn-danger btn-sm" onclick="eliminaRecensione(${i})">🗑️</button></td>`; }); }
+function apriModalRecensione(i) { editIndex = i; const r = datiCorrenti.recensioni[i]; document.getElementById('formRecProf').value = r.nomeProfRec||r.nome_professore||''; document.getElementById('formRecTesto').value = r.recensione||r.testo||''; document.getElementById('modalRecensione').classList.add('active'); }
+function chiudiModalRecensione() { document.getElementById('modalRecensione').classList.remove('active'); }
+function modificaRecensione(i) { apriModalRecensione(i); }
+function salvaModificaRecensione() { const recensione = document.getElementById('formRecTesto').value.trim(); if(!recensione) { mostraToast('⚠️ Recensione vuota!', 'error'); return; } fetch(`/api/recensioni/${editIndex}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({recensione}) }).then(r => r.json()).then(data => { if(data.success) { chiudiModalRecensione(); caricaRecensioni(); mostraToast('✅ Recensione aggiornata!'); } else mostraToast('❌ Errore', 'error'); }); }
+function eliminaRecensione(i) { if(!confirm('⚠️ Eliminare questa recensione?')) return; fetch(`/api/recensioni/${i}`, {method: 'DELETE'}).then(r => r.json()).then(data => { if(data.success) { caricaRecensioni(); mostraToast('✅ Eliminata!'); } }); }
+function filtraRecensioni() { const q = event.target.value.toLowerCase(); document.querySelectorAll('#tabellaRecensioni tbody tr').forEach(row => { row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none'; }); }
+
+// ================= UTENTI =================
+function caricaUtenti() { fetch(`${API_BASE}/api/utenti`).then(r => r.json()).then(data => { datiCorrenti.utenti = data; renderUtenti(); }); }
+function renderUtenti() {
+    const tbody = document.querySelector('#tabellaUtenti tbody'); tbody.innerHTML = '';
+    datiCorrenti.utenti.forEach((u, i) => {
+        const row = tbody.insertRow();
+        const badgeClass = u.role === 'admin' ? 'badge-admin' : 'badge-user';
+        const badgeIcon = u.role === 'admin' ? '👑' : '👤';
+        const isSelf = u.username === '{{ username }}';
+        row.innerHTML = `
+            <td><strong>${u.username}</strong>${isSelf ? ' <span style="color:#999;font-size:11px;">(tu)</span>' : ''}</td>
+            <td><span class="badge ${badgeClass}">${badgeIcon} ${u.role}</span></td>
+            <td>${u.created_at || 'N/A'}</td>
+            <td>${u.voti_count || 0}</td>
+            <td>${u.recensioni_count || 0}</td>
+            <td>
+                ${!isSelf ? `
+                    <button class="btn btn-info btn-sm" onclick="vediAnagrafica(${i})" title="Vedi scheda anagrafica">📋</button>
+                    <button class="btn btn-warning btn-sm" onclick="apriModalCredenziali(${i})" title="Modifica username/password">✏️ Cred.</button>
+                    <button class="btn btn-primary btn-sm" onclick="cambiaRuolo(${i})" title="Cambia ruolo">🔄 Ruolo</button>
+                    <button class="btn btn-danger btn-sm" onclick="eliminaUtente(${i})" title="Elimina utente">🗑️</button>
+                ` : '<span style="color:#999;font-size:12px;">-</span>'}
+            </td>
+        `;
+    });
+}
+function apriModalUtente() { editIndex = null; document.getElementById('titoloModalUtente').textContent = '➕ Nuovo Utente'; document.getElementById('formUsername').value = ''; document.getElementById('formPassword').value = ''; document.getElementById('formRuolo').value = 'user'; document.getElementById('modalUtente').classList.add('active'); }
+function chiudiModalUtente() { document.getElementById('modalUtente').classList.remove('active'); }
+function salvaUtente() { const username = document.getElementById('formUsername').value.trim(); const password = document.getElementById('formPassword').value.trim(); const role = document.getElementById('formRuolo').value; if(!username || !password) { mostraToast('⚠️ Username e password richiesti!', 'error'); return; } fetch('/api/utenti/crea', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username, password, role}) }).then(r => r.json()).then(data => { if(data.success) { chiudiModalUtente(); caricaUtenti(); mostraToast(`✅ Utente ${username} creato come ${role}!`); } else mostraToast('❌ ' + (data.error || 'Errore'), 'error'); }); }
+function cambiaRuolo(i) { const u = datiCorrenti.utenti[i]; const nuovoRuolo = u.role === 'admin' ? 'user' : 'admin'; if(!confirm(`⚠️ Cambiare ruolo di ${u.username} da ${u.role} a ${nuovoRuolo}?`)) return; fetch(`/api/utenti/${i}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({role: nuovoRuolo}) }).then(r => r.json()).then(data => { if(data.success) { caricaUtenti(); mostraToast(`✅ Ruolo aggiornato a ${nuovoRuolo}!`); } else mostraToast('❌ ' + (data.error || 'Errore'), 'error'); }); }
+function eliminaUtente(i) { const u = datiCorrenti.utenti[i]; if(!confirm(`⚠️ ELIMINARE UTENTE ${u.username}?`)) return; fetch(`/api/utenti/${i}`, {method: 'DELETE'}).then(r => r.json()).then(data => { if(data.success) { caricaUtenti(); mostraToast(`✅ Utente ${u.username} eliminato!`); } else mostraToast('❌ ' + (data.error || 'Errore'), 'error'); }); }
+function filtraUtenti() { const q = event.target.value.toLowerCase(); document.querySelectorAll('#tabellaUtenti tbody tr').forEach(row => { row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none'; }); }
+
+// ================= SCHEDA ANAGRAFICA UTENTE =================
+// ================= SCHEDA ANAGRAFICA UTENTE (CORRETTO) =================
+// ================= SCHEDA ANAGRAFICA UTENTE (COMPLETA E CORRETTA) =================
+async function vediAnagrafica(index) {
+    anagraficaIndex = index;
+    anagraficaModificaAbilitata = false;
+    document.getElementById('btnSalvaAnagrafica').style.display = 'none';
+    
+    try {
+        const response = await fetch(`${API_BASE}/api/utenti-anagrafica/${index}`);
+        const anagrafica = await response.json();
+        
+        document.getElementById('titoloModalAnagrafica').textContent = `📋 Scheda Anagrafica: ${anagrafica.username}`;
+        
+        const statoBadge = anagrafica.account_status === 'attivo' ? 'badge-attivo' : 
+                          anagrafica.account_status === 'sospeso' ? 'badge-sospeso' : 'badge-bannato';
+        const statoLabel = anagrafica.account_status === 'attivo' ? '✅ Attivo' : 
+                          anagrafica.account_status === 'sospeso' ? '⚠️ Sospeso' : '❌ Bannato';
+        
+        document.getElementById('anagraficaContent').innerHTML = `
+            <div class="anagrafica-grid">
+                <div class="anagrafica-card">
+                    <h4>👤 Informazioni Base</h4>
+                    <div class="info-row"><span class="label">Username:</span><span class="value">${anagrafica.username}</span></div>
+                    <div class="info-row"><span class="label">Email:</span><span class="value" id="ana_email">${anagrafica.email || '-'}</span></div>
+                    <div class="info-row"><span class="label">Nome:</span><span class="value" id="ana_nome_cognome">${anagrafica.nome_cognome || '-'}</span></div>
+                    <div class="info-row"><span class="label">Ruolo:</span><span class="value" id="ana_role">${anagrafica.role}</span></div>
+                    <div class="info-row"><span class="label">Stato Account:</span><span class="value" id="ana_account_status"><span class="badge ${statoBadge}">${statoLabel}</span></span></div>
+                </div>
+                
+                <div class="anagrafica-card">
+                    <h4>📍 Contatti</h4>
+                    <div class="info-row"><span class="label">Telefono:</span><span class="value" id="ana_telefono">${anagrafica.telefono || '-'}</span></div>
+                    <div class="info-row"><span class="label">Indirizzo:</span><span class="value" id="ana_indirizzo">${anagrafica.indirizzo || '-'}</span></div>
+                    <div class="info-row"><span class="label">Città:</span><span class="value" id="ana_citta">${anagrafica.citta || '-'}</span></div>
+                    <div class="info-row"><span class="label">CAP:</span><span class="value" id="ana_cap">${anagrafica.cap || '-'}</span></div>
+                    <div class="info-row"><span class="label">Data Nascita:</span><span class="value" id="ana_data_nascita">${anagrafica.data_nascita || '-'}</span></div>
+                </div>
+                
+                <div class="anagrafica-card">
+                    <h4>🏫 Scuola & Attività</h4>
+                    <div class="info-row"><span class="label">Scuola:</span><span class="value" id="ana_scuola">${anagrafica.scuola || '-'}</span></div>
+                    <div class="info-row"><span class="label">Iscritto dal:</span><span class="value">${anagrafica.created_at}</span></div>
+                    <div class="info-row"><span class="label">Ultimo accesso:</span><span class="value">${anagrafica.last_login}</span></div>
+                    <div class="info-row"><span class="label">Sessioni attive:</span><span class="value">${anagrafica.sessioni_attive}</span></div>
+                </div>
+                
+                <div class="anagrafica-card">
+                    <h4>📝 Note Admin</h4>
+                    <div style="margin-top: 10px;">
+                        <textarea id="ana_admin_note" style="width:100%; min-height:80px; border:2px solid #e0e0e0; border-radius:10px; padding:10px; font-size:13px;">${anagrafica.admin_note || ''}</textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="anagrafica-stats">
+                <div class="anagrafica-stat">
+                    <div class="number" style="color: #667eea;">${anagrafica.voti_count}</div>
+                    <div class="label">Voti Inseriti</div>
+                </div>
+                <div class="anagrafica-stat">
+                    <div class="number" style="color: #4CAF50;">${anagrafica.recensioni_count}</div>
+                    <div class="label">Recensioni</div>
+                </div>
+                <div class="anagrafica-stat">
+                    <div class="number" style="color: #FF9800;">${anagrafica.sessioni_attive}</div>
+                    <div class="label">Sessioni Attive</div>
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('modalAnagrafica').classList.add('active');
+    } catch(e) { 
+        console.error("Errore vediAnagrafica:", e); 
+        mostraToast('❌ Errore nel caricamento scheda', 'error'); 
+    }
+}
+
+function abilitaModificaAnagrafica() {
+    anagraficaModificaAbilitata = true;
+    document.getElementById('btnSalvaAnagrafica').style.display = 'inline-block';
+    
+    const campiModificabili = [
+        {id: 'ana_email', type: 'text'},
+        {id: 'ana_nome_cognome', type: 'text'},
+        {id: 'ana_telefono', type: 'text'},
+        {id: 'ana_indirizzo', type: 'text'},
+        {id: 'ana_citta', type: 'text'},
+        {id: 'ana_cap', type: 'text'},
+        {id: 'ana_data_nascita', type: 'text'},
+        {id: 'ana_scuola', type: 'text'}
+    ];
+    
+    campiModificabili.forEach(campo => {
+        const el = document.getElementById(campo.id);
+        if(el) {
+            const currentValue = el.textContent === '-' ? '' : el.textContent;
+            el.innerHTML = `<input type="${campo.type}" value="${currentValue}" style="width:100%; padding:8px; border:2px solid #667eea; border-radius:8px;">`;
+        }
+    });
+    
+    // Stato account (select)
+    const statoEl = document.getElementById('ana_account_status');
+    if(statoEl) {
+        const currentBadge = statoEl.querySelector('.badge');
+        const currentValue = currentBadge ? currentBadge.textContent.trim() : 'Attivo';
+        const valueOnly = currentValue.replace('✅ ', '').replace('⚠️ ', '').replace('❌ ', '');
+        
+        statoEl.innerHTML = `
+            <select style="width:100%; padding:8px; border:2px solid #667eea; border-radius:8px;">
+                <option value="attivo" ${valueOnly === 'Attivo' ? 'selected' : ''}>✅ Attivo</option>
+                <option value="sospeso" ${valueOnly === 'Sospeso' ? 'selected' : ''}>⚠️ Sospeso</option>
+                <option value="bannato" ${valueOnly === 'Bannato' ? 'selected' : ''}>❌ Bannato</option>
+            </select>
+        `;
+    }
+    
+    // Ruolo (select)
+    const roleEl = document.getElementById('ana_role');
+    if(roleEl) {
+        const currentValue = roleEl.textContent.trim();
+        roleEl.innerHTML = `
+            <select style="width:100%; padding:8px; border:2px solid #667eea; border-radius:8px;">
+                <option value="user" ${currentValue === 'user' ? 'selected' : ''}>👤 Utente</option>
+                <option value="admin" ${currentValue === 'admin' ? 'selected' : ''}>👑 Admin</option>
+            </select>
+        `;
+    }
+    
+    mostraToast('✏️ Modalità modifica attivata - Modifica i campi e clicca Salva');
+}
+
+async function salvaAnagrafica() {
+    if(!anagraficaModificaAbilitata || anagraficaIndex === null) {
+        mostraToast('⚠️ Errore: dati non validi', 'error');
+        return;
+    }
+    
+    const getEmail = () => {
+        const el = document.getElementById('ana_email');
+        const input = el ? el.querySelector('input') : null;
+        return input ? input.value : '';
+    };
+    
+    const getNomeCognome = () => {
+        const el = document.getElementById('ana_nome_cognome');
+        const input = el ? el.querySelector('input') : null;
+        return input ? input.value : '';
+    };
+    
+    const getTelefono = () => {
+        const el = document.getElementById('ana_telefono');
+        const input = el ? el.querySelector('input') : null;
+        return input ? input.value : '';
+    };
+    
+    const getIndirizzo = () => {
+        const el = document.getElementById('ana_indirizzo');
+        const input = el ? el.querySelector('input') : null;
+        return input ? input.value : '';
+    };
+    
+    const getCitta = () => {
+        const el = document.getElementById('ana_citta');
+        const input = el ? el.querySelector('input') : null;
+        return input ? input.value : '';
+    };
+    
+    const getCap = () => {
+        const el = document.getElementById('ana_cap');
+        const input = el ? el.querySelector('input') : null;
+        return input ? input.value : '';
+    };
+    
+    const getDataNascita = () => {
+        const el = document.getElementById('ana_data_nascita');
+        const input = el ? el.querySelector('input') : null;
+        return input ? input.value : '';
+    };
+    
+    const getScuola = () => {
+        const el = document.getElementById('ana_scuola');
+        const input = el ? el.querySelector('input') : null;
+        return input ? input.value : '';
+    };
+    
+    const getAccountStatus = () => {
+        const el = document.getElementById('ana_account_status');
+        const select = el ? el.querySelector('select') : null;
+        return select ? select.value : 'attivo';
+    };
+    
+    const getRole = () => {
+        const el = document.getElementById('ana_role');
+        const select = el ? el.querySelector('select') : null;
+        return select ? select.value : 'user';
+    };
+    
+    const getAdminNote = () => {
+        const el = document.getElementById('ana_admin_note');
+        return el ? el.value : '';
+    };
+    
+    const datiModifica = {
+        email: getEmail(),
+        nome_cognome: getNomeCognome(),
+        telefono: getTelefono(),
+        indirizzo: getIndirizzo(),
+        citta: getCitta(),
+        cap: getCap(),
+        data_nascita: getDataNascita(),
+        scuola: getScuola(),
+        account_status: getAccountStatus(),
+        role: getRole(),
+        admin_note: getAdminNote()
+    };
+    
+    try {
+        const response = await fetch(`${API_BASE}/api/utenti-anagrafica/${anagraficaIndex}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(datiModifica)
+        });
+        const data = await response.json();
+        if(data.success) {
+            chiudiModalAnagrafica();
+            caricaUtenti();
+            mostraToast('✅ Scheda anagrafica aggiornata!');
+        } else {
+            mostraToast('❌ ' + (data.error || 'Errore'), 'error');
+        }
+    } catch(e) { 
+        console.error("Errore salvaAnagrafica:", e); 
+        mostraToast('❌ Errore di connessione', 'error'); 
+    }
+}
+
+function chiudiModalAnagrafica() {
+    document.getElementById('modalAnagrafica').classList.remove('active');
+    anagraficaIndex = null;
+    anagraficaModificaAbilitata = false;
+}
+// ================= MODIFICA CREDENZIALI UTENTE =================
+function apriModalCredenziali(index) {
+    editCredIndex = index;
+    const u = datiCorrenti.utenti[index];
+    document.getElementById('titoloModalCredenziali').textContent = '✏️ Modifica Credenziali';
+    document.getElementById('credUsernameCorrente').textContent = u.username;
+    document.getElementById('formNuovoUsername').value = '';
+    document.getElementById('formNuovaPassword').value = '';
+    document.getElementById('modalCredenziali').classList.add('active');
+}
+function chiudiModalCredenziali() { document.getElementById('modalCredenziali').classList.remove('active'); editCredIndex = null; }
+async function salvaCredenzialiUtente() {
+    if(editCredIndex === null) return;
+    const nuovoUsername = document.getElementById('formNuovoUsername').value.trim();
+    const nuovaPassword = document.getElementById('formNuovaPassword').value.trim();
+    if(!nuovoUsername && !nuovaPassword) { mostraToast('⚠️ Compila almeno un campo!', 'error'); return; }
+    if(nuovoUsername && nuovoUsername.length < 3) { mostraToast('⚠️ Username minimo 3 caratteri!', 'error'); return; }
+    if(nuovaPassword && nuovaPassword.length < 4) { mostraToast('⚠️ Password minima 4 caratteri!', 'error'); return; }
+    try {
+        const response = await fetch(`${API_BASE}/api/utenti/${editCredIndex}/credenziali`, {
+            method: 'PUT', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ username: nuovoUsername || undefined, password: nuovaPassword || undefined })
+        });
+        const data = await response.json();
+        if(data.success) { chiudiModalCredenziali(); caricaUtenti(); mostraToast(`✅ Credenziali di ${data.username || 'utente'} aggiornate!`); }
+        else mostraToast('❌ ' + (data.error || 'Errore'), 'error');
+    } catch(e) { console.error("Errore salvaCredenzialiUtente:", e); mostraToast('❌ Errore di connessione', 'error'); }
+}
+
+// ================= REGISTRAZIONI =================
+async function caricaRegistrazioni() {
+    try {
+        const response = await fetch(`${API_BASE}/api/registrazioni`);
+        const registrazioni = await response.json();
+        const tbody = document.querySelector('#tabellaRegistrazioni tbody');
+        tbody.innerHTML = '';
+        const inAttesa = registrazioni.filter(r => r.stato === 'in_attesa').length;
+        const badge = document.getElementById('badgeRegistrazioni');
+        const countBadge = document.getElementById('countRegistrazioni');
+        if(inAttesa > 0) {
+            badge.textContent = inAttesa;
+            badge.style.display = 'inline-block';
+            countBadge.textContent = `${inAttesa} in attesa`;
+            countBadge.style.display = 'inline-block';
+        } else {
+            badge.style.display = 'none';
+            countBadge.style.display = 'none';
+        }
+        registrazioni.forEach(r => {
+            const row = tbody.insertRow();
+            const badgeClass = r.stato === 'in_attesa' ? 'badge-pending' : r.stato === 'approvato' ? 'badge-resolved' : 'badge-dismissed';
+            const badgeIcon = r.stato === 'in_attesa' ? '⏳' : r.stato === 'approvato' ? '✅' : '❌';
+            row.innerHTML = `
+                <td>#${r.id}</td>
+                <td><strong>${r.username}</strong></td>
+                <td>${r.email}</td>
+                <td>${r.nome_cognome}</td>
+                <td>${r.scuola}</td>
+                <td>${r.data_registrazione}</td>
+                <td><span class="badge ${badgeClass}">${badgeIcon} ${r.stato}</span></td>
+                <td>
+                    ${r.stato === 'in_attesa' ? `
+                        <button class="btn btn-success btn-sm" onclick="gestisciRegistrazione(${r.id}, 'approvato')">✅ Approva</button>
+                        <button class="btn btn-danger btn-sm" onclick="gestisciRegistrazione(${r.id}, 'rifiutato')">❌ Rifiuta</button>
+                        <button class="btn btn-warning btn-sm" onclick="apriModalRegistrazione(${r.id})">✏️</button>
+                    ` : '<span style="color:#999;">Chiusa</span>'}
+                    <button class="btn btn-danger btn-sm" onclick="eliminaRegistrazione(${r.id})">🗑️</button>
+                </td>
+            `;
+        });
+    } catch(e) { console.error("Errore caricaRegistrazioni:", e); mostraToast('❌ Errore registrazioni', 'error'); }
+}
+
+async function gestisciRegistrazione(id, stato) {
+    const note = stato === 'rifiutato' ? prompt("Motivo del rifiuto (opzionale):") : null;
+    try {
+        const response = await fetch(`${API_BASE}/api/registrazioni/${id}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({stato, admin_note: note || ''})
+        });
+        const data = await response.json();
+        if(data.success) {
+            caricaRegistrazioni();
+            mostraToast(`✅ Registrazione ${stato === 'approvato' ? 'approvata' : 'rifiutata'}`);
+            if(stato === 'approvato') {
+                setTimeout(() => alert(`✅ Utente creato! Ora può accedere con le credenziali inserite.`), 500);
+            }
+        } else {
+            mostraToast('❌ ' + (data.error || 'Errore'), 'error');
+        }
+    } catch(e) { console.error("Errore gestisciRegistrazione:", e); mostraToast('❌ Errore', 'error'); }
+}
+
+async function eliminaRegistrazione(id) {
+    if(!confirm('⚠️ Eliminare permanentemente questa richiesta?')) return;
+    try {
+        const response = await fetch(`${API_BASE}/api/registrazioni/${id}`, {method: 'DELETE'});
+        const data = await response.json();
+        if(data.success) { caricaRegistrazioni(); mostraToast('✅ Eliminata'); }
+        else mostraToast('❌ ' + (data.error || 'Errore'), 'error');
+    } catch(e) { console.error("Errore eliminaRegistrazione:", e); mostraToast('❌ Errore', 'error'); }
+}
+
+function apriModalRegistrazione(id) {
+    editRegId = id;
+    fetch(`${API_BASE}/api/registrazioni`)
+        .then(r => r.json())
+        .then(registrazioni => {
+            const r = registrazioni.find(x => x.id === id);
+            if(!r) return;
+            document.getElementById('formRegId').value = r.id;
+            document.getElementById('formRegUsername').value = r.username;
+            document.getElementById('formRegEmail').value = r.email;
+            document.getElementById('formRegNome').value = r.nome_cognome;
+            document.getElementById('formRegScuola').value = r.scuola;
+            document.getElementById('formRegPassword').value = '';
+            document.getElementById('modalRegistrazione').classList.add('active');
+        });
+}
+
+function chiudiModalRegistrazione() {
+    document.getElementById('modalRegistrazione').classList.remove('active');
+    editRegId = null;
+}
+
+async function salvaModificaRegistrazione() {
+    if(!editRegId) return;
+    const data = {
+        username: document.getElementById('formRegUsername').value.trim(),
+        email: document.getElementById('formRegEmail').value.trim(),
+        nome_cognome: document.getElementById('formRegNome').value.trim(),
+        scuola: document.getElementById('formRegScuola').value.trim(),
+        password: document.getElementById('formRegPassword').value.trim() || undefined
+    };
+    try {
+        const response = await fetch(`${API_BASE}/api/registrazioni/${editRegId}/modifica`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        if(result.success) {
+            chiudiModalRegistrazione();
+            caricaRegistrazioni();
+            mostraToast('✅ Dati aggiornati');
+        } else {
+            mostraToast('❌ ' + (result.error || 'Errore'), 'error');
+        }
+    } catch(e) { console.error("Errore salvaModificaRegistrazione:", e); mostraToast('❌ Errore', 'error'); }
+}
+
+// ================= TICKET ADMIN =================
+async function caricaTicketAdmin() {
+    try {
+        const response = await fetch(`${API_BASE}/api/ticket`);
+        const ticket = await response.json();
+        const tbody = document.querySelector('#tabellaTicketAdmin tbody');
+        tbody.innerHTML = '';
+        const aperti = ticket.filter(t => t.stato === 'aperto').length;
+        const countBadge = document.getElementById('countTicketAperti');
+        const badgeTicket = document.getElementById('badgeTicket');
+        if(aperti > 0) {
+            countBadge.textContent = `${aperti} aperti`;
+            countBadge.style.display = 'inline-block';
+            badgeTicket.textContent = aperti;
+            badgeTicket.style.display = 'inline-block';
+        } else {
+            countBadge.style.display = 'none';
+            badgeTicket.style.display = 'none';
+        }
+        ticket.forEach(t => {
+            const row = tbody.insertRow();
+            const prioritaClass = `priorita-${t.priorita}`;
+            const statoClass = `stato-${t.stato}`;
+            const statoLabel = t.stato === 'aperto' ? '🔵 Aperto' : t.stato === 'in_lavorazione' ? '🟡 In lavorazione' : t.stato === 'risolto' ? '🟢 Risolto' : '⚫ Chiuso';
+            row.innerHTML = `
+                <td>#${t.id}</td>
+                <td><strong>${t.utente}</strong></td>
+                <td>${t.oggetto}</td>
+                <td><span class="${prioritaClass}">${t.priorita}</span></td>
+                <td><span class="${statoClass}">${statoLabel}</span></td>
+                <td>${t.data_apertura}</td>
+                <td>
+                    <button class="btn btn-primary btn-sm" onclick="vediTicketAdmin(${t.id})">👁️ Vedi/Rispondi</button>
+                    <button class="btn btn-danger btn-sm" onclick="eliminaTicketAdmin(${t.id})">🗑️</button>
+                </td>
+            `;
+        });
+    } catch(e) { console.error("Errore caricaTicketAdmin:", e); mostraToast('❌ Errore ticket', 'error'); }
+}
+
+async function vediTicketAdmin(id) {
+    ticketAdminCorrenteId = id;
+    try {
+        const response = await fetch(`${API_BASE}/api/ticket/${id}`);
+        const ticket = await response.json();
+        const prioritaClass = `priorita-${ticket.priorita}`;
+        const statoLabel = ticket.stato === 'aperto' ? '🔵 Aperto' : ticket.stato === 'in_lavorazione' ? '🟡 In lavorazione' : ticket.stato === 'risolto' ? '🟢 Risolto' : '⚫ Chiuso';
+        document.getElementById('ticketAdminTitolo').textContent = `🎫 Ticket #${ticket.id}: ${ticket.oggetto}`;
+        document.getElementById('ticketAdminInfo').innerHTML = `
+            <p><strong>Utente:</strong> ${ticket.utente}</p>
+            <p><strong>Priorità:</strong> <span class="${prioritaClass}">${ticket.priorita}</span></p>
+            <p><strong>Stato:</strong> ${statoLabel}</p>
+            <p><strong>Data:</strong> ${ticket.data_apertura}</p>
+            <p><strong>Messaggio:</strong> ${ticket.messaggio}</p>
+            ${ticket.admin_assegnato ? `<p><strong>Admin:</strong> ${ticket.admin_assegnato}</p>` : ''}
+        `;
+        document.getElementById('ticketAdminStato').value = ticket.stato;
+        const risposteDiv = document.getElementById('ticketAdminRisposte');
+        if(ticket.risposte && ticket.risposte.length > 0) {
+            risposteDiv.innerHTML = '<h4>💬 Conversazione</h4>' + ticket.risposte.map(r => `
+                <div class="risposta-item ${r.da === 'admin' ? 'admin' : ''}">
+                    <div class="risposta-header">
+                        <strong>${r.da === 'admin' ? '👨‍💼 Admin (' + r.admin + ')' : '👤 Utente (' + r.utente + ')'}</strong>
+                        <span>${r.data}</span>
+                    </div>
+                    <div class="risposta-messaggio">${r.messaggio}</div>
+                </div>
+            `).join('');
+        } else {
+            risposteDiv.innerHTML = '<p style="color:#999;">Nessuna risposta ancora.</p>';
+        }
+        document.getElementById('ticketAdminRisposta').value = '';
+        document.getElementById('modalTicketAdmin').classList.add('active');
+    } catch(e) { console.error("Errore vediTicketAdmin:", e); }
+}
+
+function chiudiTicketAdmin() {
+    document.getElementById('modalTicketAdmin').classList.remove('active');
+    ticketAdminCorrenteId = null;
+}
+
+async function rispondiTicketAdmin() {
+    const risposta = document.getElementById('ticketAdminRisposta').value.trim();
+    const nuovoStato = document.getElementById('ticketAdminStato').value;
+    if(!risposta && !nuovoStato) {
+        if(!confirm('ℹ️ Non hai inserito risposta né cambiato stato. Vuoi comunque chiudere?')) return;
+        chiudiTicketAdmin();
+        return;
+    }
+    try {
+        const body = {};
+        if(risposta) body.risposta = risposta;
+        if(nuovoStato) body.stato = nuovoStato;
+        const response = await fetch(`${API_BASE}/api/ticket/${ticketAdminCorrenteId}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(body)
+        });
+        const data = await response.json();
+        if(data.success) {
+            chiudiTicketAdmin();
+            caricaTicketAdmin();
+            mostraToast('✅ Ticket aggiornato!');
+        } else {
+            mostraToast('❌ ' + (data.error || 'Errore'), 'error');
+        }
+    } catch(e) { console.error("Errore rispondiTicketAdmin:", e); mostraToast('❌ Errore di connessione', 'error'); }
+}
+
+async function eliminaTicketAdmin(id) {
+    if(!confirm('⚠️ Eliminare permanentemente questo ticket?')) return;
+    try {
+        const response = await fetch(`${API_BASE}/api/ticket/${id}`, {method: 'DELETE'});
+        const data = await response.json();
+        if(data.success) { caricaTicketAdmin(); mostraToast('✅ Ticket eliminato'); }
+        else mostraToast('❌ ' + (data.error || 'Errore'), 'error');
+    } catch(e) { console.error("Errore eliminaTicketAdmin:", e); mostraToast('❌ Errore', 'error'); }
+}
+
+// ================= SESSIONI ATTIVE =================
+async function caricaSessioni() {
+    try {
+        const response = await fetch(`${API_BASE}/api/sessioni`);
+        const sessioni = await response.json();
+        const tbody = document.querySelector('#tabellaSessioni tbody'); tbody.innerHTML = '';
+        sessioni.forEach(s => {
+            const row = tbody.insertRow();
+            const isSelf = s.username === '{{ username }}';
+            row.innerHTML = `<td><strong>${s.username}</strong>${isSelf ? ' (tu)' : ''}</td><td>${s.ip||'N/A'}</td><td>${s.login_time||'N/A'}</td><td>${s.last_activity||'N/A'}</td><td style="font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;">${s.user_agent||'Unknown'}</td><td>${!isSelf ? `<button class="btn btn-danger btn-sm" onclick="terminaSessione('${s.session_id}')">🚫 Termina</button>` : '<span style="color:#999;">-</span>'}</td>`;
+        });
+        mostraToast(`✅ ${sessioni.length} sessioni attive`);
+    } catch(e) { console.error("Errore caricaSessioni:", e); mostraToast('❌ Errore sessioni', 'error'); }
+}
+async function terminaSessione(sessionId) {
+    if(!confirm('⚠️ Terminare questa sessione? L\'utente verrà disconnesso e dovrà rifare il login.')) return;
+    try {
+        const response = await fetch(`${API_BASE}/api/sessioni/${sessionId}`, {method: 'DELETE'});
+        const data = await response.json();
+        if(data.success) { caricaSessioni(); mostraToast(`✅ ${data.message}`, 'success'); }
+        else mostraToast('❌ ' + (data.error || 'Errore'), 'error');
+    } catch(e) { console.error("Errore terminaSessione:", e); mostraToast('❌ Errore di connessione', 'error'); }
+}
+
+// ================= SEGNALAZIONI =================
+async function caricaSegnalazioni() {
+    try {
+        const response = await fetch(`${API_BASE}/api/segnalazioni`);
+        const segnalazioni = await response.json();
+        const tbody = document.querySelector('#tabellaSegnalazioni tbody'); tbody.innerHTML = '';
+        const pending = segnalazioni.filter(s => s.stato === 'pending').length;
+        const countBadge = document.getElementById('countSegnalazioni');
+        const badgeSegnalazioni = document.getElementById('badgeSegnalazioni');
+        if(pending > 0) { 
+            countBadge.textContent = `${pending} nuove`; 
+            countBadge.style.display = 'inline-block';
+            badgeSegnalazioni.textContent = pending;
+            badgeSegnalazioni.style.display = 'inline-block';
+        } else { 
+            countBadge.style.display = 'none';
+            badgeSegnalazioni.style.display = 'none';
+        }
+        segnalazioni.forEach(s => {
+            const row = tbody.insertRow();
+            const badgeClass = s.stato === 'pending' ? 'badge-pending' : s.stato === 'resolved' ? 'badge-resolved' : 'badge-dismissed';
+            const badgeIcon = s.stato === 'pending' ? '⏳' : s.stato === 'resolved' ? '✅' : '❌';
+            row.innerHTML = `<td>#${s.id}</td><td>${s.tipo==='voto'?'⭐ Voto':'💬 Recensione'}</td><td>${s.segnalatore}</td><td>${s.motivo||'Nessun motivo'}</td><td>${s.data||'N/A'}</td><td><span class="badge ${badgeClass}">${badgeIcon} ${s.stato}</span></td><td>${s.stato==='pending' ? `<button class="btn btn-success btn-sm" onclick="gestisciSegnalazione(${s.id},'resolved')">✅ Risolvi</button><button class="btn btn-warning btn-sm" onclick="gestisciSegnalazione(${s.id},'dismissed')">❌ Ignora</button>` : '<span style="color:#999;">Chiusa</span>'}<button class="btn btn-danger btn-sm" onclick="eliminaSegnalazione(${s.id})">🗑️</button></td>`;
+        });
+    } catch(e) { console.error("Errore caricaSegnalazioni:", e); mostraToast('❌ Errore segnalazioni', 'error'); }
+}
+async function gestisciSegnalazione(id, stato) {
+    const note = prompt("Nota opzionale:");
+    try {
+        const response = await fetch(`${API_BASE}/api/segnalazioni/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({stato, admin_note: note||''}) });
+        const data = await response.json();
+        if(data.success) { caricaSegnalazioni(); mostraToast(`✅ Segnalazione ${stato==='resolved'?'risolta':'ignorata'}`); }
+        else mostraToast('❌ ' + (data.error || 'Errore'), 'error');
+    } catch(e) { console.error("Errore gestisciSegnalazione:", e); mostraToast('❌ Errore', 'error'); }
+}
+async function eliminaSegnalazione(id) {
+    if(!confirm('⚠️ Eliminare permanentemente?')) return;
+    try {
+        const response = await fetch(`${API_BASE}/api/segnalazioni/${id}`, {method: 'DELETE'});
+        const data = await response.json();
+        if(data.success) { caricaSegnalazioni(); mostraToast('✅ Eliminata'); }
+        else mostraToast('❌ ' + (data.error || 'Errore'), 'error');
+    } catch(e) { console.error("Errore eliminaSegnalazione:", e); mostraToast('❌ Errore', 'error'); }
+}
+
+// ================= INIZIALIZZAZIONE =================
+window.onload = function() { 
+    caricaProfessori(); 
+    caricaVoti(); 
+    caricaRecensioni(); 
+    aggiornaStats();
+    caricaNotificheAdmin();
+    fetch(`${API_BASE}/api/registrazioni`).then(r=>r.json()).then(reg => {
+        const inAttesa = reg.filter(r => r.stato === 'in_attesa').length;
+        if(inAttesa > 0) {
+            document.getElementById('badgeRegistrazioni').textContent = inAttesa;
+            document.getElementById('badgeRegistrazioni').style.display = 'inline-block';
+        }
+    });
+};
+</script>
+</body>
+</html>
