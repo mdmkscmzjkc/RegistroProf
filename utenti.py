@@ -15,14 +15,14 @@ load_dotenv()  # ← AGGIUNGI QUESTO
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "fallback_key_change_in_production")
 
-# ======== CONFIGURAZIONE DATABASE (COMPATIBILE CON RENDER) ========
+# ======== CONFIGURAZIONE DATABASE PORTABILE ========
 import os
 
-# Se USE_SQLITE è impostato, usa SQLite (evita psycopg2)
-if os.getenv("USE_SQLITE") == "true":
-    database_url = "sqlite:///registro.db"
+# Se siamo su Render, usa SQLite nella cartella corrente
+if os.getenv("RENDER") or os.getenv("USE_SQLITE") == "true":
+    database_url = "sqlite:///registro.db"  # File SQLite nella cartella dell'app
 else:
-    # Altrimenti usa PostgreSQL da variabile d'ambiente
+    # Locale: usa PostgreSQL se configurato, altrimenti SQLite
     database_url = os.getenv("DATABASE_URL", "sqlite:///registro.db")
     if database_url.startswith("postgres://"):
         database_url = database_url.replace("postgres://", "postgresql://", 1)
@@ -30,16 +30,26 @@ else:
 app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-# Configura engine options solo se non è SQLite
+# Configura engine options solo per database non-SQLite
 if not database_url.startswith("sqlite"):
     app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
         "pool_recycle": 300,
         "pool_pre_ping": True,
     }
 
-db = SQLAlchemy(app)# ======== PERCORSI FILE ========
-BASE_DIR = r"C:\Users\andre\OneDrive\Desktop\RegistroProf\registro"
+db = SQLAlchemy(app)# ✅ AGGIUNGI QUESTO (funziona su Windows E Linux):
+import os
 
+# Usa la variabile d'ambiente RENDER se esiste (su Render), altrimenti percorso locale
+if os.getenv("RENDER"):
+    # Su Render: usa la cartella corrente per i file JSON (o meglio, usa il database)
+    BASE_DIR = os.path.join(os.getcwd(), "data")
+else:
+    # Locale Windows: il tuo percorso originale
+    BASE_DIR = r"C:\Users\andre\OneDrive\Desktop\RegistroProf\registro"
+
+# Crea la cartella se non esiste
+os.makedirs(BASE_DIR, exist_ok=True)
 FILE_UTENTI = os.path.join(BASE_DIR, "utenti.json")
 FILE_VOTI = os.path.join(BASE_DIR, "registro.json")
 FILE_RECENSIONI = os.path.join(BASE_DIR, "recensioni.json")
