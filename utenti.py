@@ -39,7 +39,45 @@ if not database_url.startswith("sqlite"):
 
 db = SQLAlchemy(app)# ✅ AGGIUNGI QUESTO (funziona su Windows E Linux):
 import os
-
+# ═══════════════════════════════════════════════════════════
+# CODICE TEMPORANEO: CREA UTENTI DI TEST PER RENDER
+# ═══════════════════════════════════════════════════════════
+with app.app_context():
+    db.create_all()  # Crea le tabelle se non esistono
+    
+    # Crea admin di test se non esiste
+    if not User.query.filter_by(username="admin").first():
+        admin = User(
+            username="admin",
+            password="admin123",  # ⚠️ Cambia in produzione!
+            email="admin@test.com",
+            nome_cognome="Admin Test",
+            scuola="Test School",
+            role="admin",
+            stato="attivo",
+            account_status="attivo",
+            created_at=datetime.now()
+        )
+        db.session.add(admin)
+        db.session.commit()
+        print("✅ Admin creato: admin / admin123")
+    
+    # Crea utente normale di test se non esiste
+    if not User.query.filter_by(username="testuser").first():
+        user = User(
+            username="andrea",
+            password="Francesco@1",
+            email="test@test.com",
+            nome_cognome="Test User",
+            scuola="Test School",
+            role="admin",
+            stato="attivo",
+            account_status="attivo",
+            created_at=datetime.now()
+        )
+        db.session.add(user)
+        db.session.commit()
+        print("✅ Utente creato: testuser / test123")
 # Usa la variabile d'ambiente RENDER se esiste (su Render), altrimenti percorso locale
 if os.getenv("RENDER"):
     # Su Render: usa la cartella corrente per i file JSON (o meglio, usa il database)
