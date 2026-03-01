@@ -1263,6 +1263,13 @@ def debug_crea_utenti():
             """
     except Exception as e:
         return f"❌ Errore: {e}", 500
+
+        # ═══════════════════════════════════════════════════════════
+# ROUTE TEST MINIMALISTA (per debug)
+# ═══════════════════════════════════════════════════════════
+@app.route("/test")
+def test_route():
+    return "✅ ROUTE TEST FUNZIONA! Se vedi questo, il routing è OK."
 # =====================================================
 # ===================== AVVIO =========================
 # =====================================================
