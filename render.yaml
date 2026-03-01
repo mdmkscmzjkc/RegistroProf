@@ -1,10 +1,9 @@
-# render.yaml
 services:
   - type: web
     name: registro-prof
     env: python
     plan: free
-    pythonVersion: "3.11"  # ← IMPORTANTE: Python stabile
+    pythonVersion: "3.11"  # ← Python stabile
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn utenti:app
     envVars:
@@ -14,6 +13,6 @@ services:
         sync: false
       - key: SITE_URL
         sync: false
-      - key: USE_SQLITE  # ← Forza SQLite per evitare psycopg2
+      - key: USE_SQLITE  # ← Forza SQLite
         value: "true"
-# ← Niente sezione "databases:" per non creare PostgreSQL
+# ← Niente sezione "databases:" per non usare PostgreSQL
