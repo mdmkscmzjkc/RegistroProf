@@ -3,7 +3,7 @@ services:
     name: registro-prof
     env: python
     plan: free
-    pythonVersion: "3.11"  # ← AGGIUNGI QUESTA RIGA (Python stabile)
+    pythonVersion: "3.11"
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn utenti:app
     envVars:
@@ -13,9 +13,6 @@ services:
         sync: false
       - key: SITE_URL
         sync: false
-
-databases:
-  - name: registro-db
-    plan: free
-    databaseName: registro_prof
-    user: registro_user
+      - key: USE_SQLITE
+        value: "true"
+# ← Niente sezione "databases:" per non usare PostgreSQL
