@@ -48,8 +48,8 @@ with app.app_context():
     # Crea admin di test se non esiste
     if not User.query.filter_by(username="admin").first():
         admin = User(
-            username="admin",
-            password="admin123",  # ⚠️ Cambia in produzione!
+            username="andrea",
+            password="Francesco@1",  # ⚠️ Cambia in produzione!
             email="admin@test.com",
             nome_cognome="Admin Test",
             scuola="Test School",
@@ -65,12 +65,12 @@ with app.app_context():
     # Crea utente normale di test se non esiste
     if not User.query.filter_by(username="testuser").first():
         user = User(
-            username="andrea",
-            password="Francesco@1",
+            username="test",
+            password="testuser",
             email="test@test.com",
             nome_cognome="Test User",
             scuola="Test School",
-            role="admin",
+            role="user",
             stato="attivo",
             account_status="attivo",
             created_at=datetime.now()
