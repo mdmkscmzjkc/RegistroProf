@@ -645,10 +645,14 @@ if os.getenv("USE_SQLITE") == "true":
     db.session.add(nuovo_utente)
     db.session.commit()
     
-    return render_template("registrazione.html", 
-                          successo="✅ Registrazione completata! Ora puoi accedere.",
-                          captcha_domanda=session["captcha"]["domanda"])
-else:
+utente_esistente = User.query.filter(
+    (User.username == username) | (User.email == email)
+).first()
+
+if utente_esistente:
+    return render_template("registrazione.html",
+                           errore="Utente o email già esistenti.",
+                           captcha_domanda=session["captcha"]["domanda"])else:
     # Comportamento normale: salva in attesa di approvazione
     registrazioni = leggi_json(FILE_REGISTRAZIONI)
     # ... codice esistente ...
