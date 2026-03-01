@@ -1217,7 +1217,6 @@ if __name__ == "__main__":
     if not os.path.exists(FILE_RECUPERO):
         scrivi_json(FILE_RECUPERO, [])
 if __name__ == "__main__":
-if __name__ == "__main__":
     # Crea le tabelle se non esistono
     with app.app_context():
         db.create_all()
