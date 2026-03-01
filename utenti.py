@@ -45,39 +45,6 @@ import os
 with app.app_context():
     db.create_all()  # Crea le tabelle se non esistono
     
-    # Crea admin di test se non esiste
-    if not User.query.filter_by(username="admin").first():
-        admin = User(
-            username="andrea",
-            password="Francesco@1",  # ⚠️ Cambia in produzione!
-            email="admin@test.com",
-            nome_cognome="Admin Test",
-            scuola="Test School",
-            role="admin",
-            stato="attivo",
-            account_status="attivo",
-            created_at=datetime.now()
-        )
-        db.session.add(admin)
-        db.session.commit()
-        print("✅ Admin creato: admin / admin123")
-    
-    # Crea utente normale di test se non esiste
-    if not User.query.filter_by(username="testuser").first():
-        user = User(
-            username="test",
-            password="testuser",
-            email="test@test.com",
-            nome_cognome="Test User",
-            scuola="Test School",
-            role="user",
-            stato="attivo",
-            account_status="attivo",
-            created_at=datetime.now()
-        )
-        db.session.add(user)
-        db.session.commit()
-        print("✅ Utente creato: testuser / test123")
 # Usa la variabile d'ambiente RENDER se esiste (su Render), altrimenti percorso locale
 if os.getenv("RENDER"):
     # Su Render: usa la cartella corrente per i file JSON (o meglio, usa il database)
@@ -1234,7 +1201,68 @@ def api_professori_mod(index):
         scrivi_json(FILE_PROFESSORI, professori)
         return jsonify({"success": True})
 
-
+# ═══════════════════════════════════════════════════════════
+# ROUTE DEBUG: CREA UTENTI DI TEST (accessibile solo da admin)
+# ═══════════════════════════════════════════════════════════
+@app.route("/debug-crea-utenti")
+def debug_crea_utenti():
+    """Crea utenti di test nel database - SOLO PER DEBUG"""
+    # Controlla che sia admin
+    if not admin_required():
+        return "❌ Accesso negato. Solo admin.", 403
+    
+    try:
+        with app.app_context():
+            # Crea admin di test se non esiste
+            if not User.query.filter_by(username="admin").first():
+                admin = User(
+                    username="admin",
+                    password="admin123",
+                    email="admin@test.com",
+                    nome_cognome="Admin Test",
+                    scuola="Test School",
+                    role="admin",
+                    stato="attivo",
+                    account_status="attivo"
+                )
+                db.session.add(admin)
+                db.session.commit()
+                msg_admin = "✅ Admin creato: admin / admin123<br>"
+            else:
+                msg_admin = "⚠️ Admin già esiste<br>"
+            
+            # Crea utente normale di test se non esiste
+            if not User.query.filter_by(username="testuser").first():
+                user = User(
+                    username="testuser",
+                    password="test123",
+                    email="test@test.com",
+                    nome_cognome="Test User",
+                    scuola="Test School",
+                    role="user",
+                    stato="attivo",
+                    account_status="attivo"
+                )
+                db.session.add(user)
+                db.session.commit()
+                msg_user = "✅ Utente creato: testuser / test123<br>"
+            else:
+                msg_user = "⚠️ Utente test già esiste<br>"
+            
+            return f"""
+            <h2>🔧 Debug: Utenti di Test</h2>
+            <p>{msg_admin}{msg_user}</p>
+            <hr>
+            <p><strong>Credenziali:</strong></p>
+            <ul>
+                <li>👑 Admin: <code>admin</code> / <code>admin123</code></li>
+                <li>👤 Utente: <code>testuser</code> / <code>test123</code></li>
+            </ul>
+            <p><a href="/login">🔐 Vai al Login</a> | <a href="/admin">⚙️ Vai alla Dashboard Admin</a></p>
+            <p style="color:#999;font-size:12px;">⚠️ Rimuovi questa route in produzione!</p>
+            """
+    except Exception as e:
+        return f"❌ Errore: {e}", 500
 # =====================================================
 # ===================== AVVIO =========================
 # =====================================================
