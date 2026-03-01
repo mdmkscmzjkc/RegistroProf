@@ -1,6 +1,5 @@
-# requirements.txt
 Flask==3.0.0
 Flask-SQLAlchemy==3.1.1
-# psycopg2-binary==2.9.9  ← COMMENTA O RIMUOVI QUESTA RIGA
+# psycopg2-binary==2.9.9  ← COMMENTA O RIMUOVI
 python-dotenv==1.0.0
 gunicorn==21.2.0
