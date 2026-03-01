@@ -15,27 +15,29 @@ load_dotenv()  # ← AGGIUNGI QUESTO
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "fallback_key_change_in_production")
 
-# ======== CONFIGURAZIONE DATABASE ========
+# ======== CONFIGURAZIONE DATABASE (COMPATIBILE CON RENDER) ========
 import os
 
-# Se USE_SQLITE è impostato, usa SQLite (più semplice per test)
+# Se USE_SQLITE è impostato, usa SQLite (evita psycopg2)
 if os.getenv("USE_SQLITE") == "true":
     database_url = "sqlite:///registro.db"
 else:
-    # Altrimenti usa PostgreSQL (per produzione)
+    # Altrimenti usa PostgreSQL da variabile d'ambiente
     database_url = os.getenv("DATABASE_URL", "sqlite:///registro.db")
     if database_url.startswith("postgres://"):
         database_url = database_url.replace("postgres://", "postgresql://", 1)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-    "pool_recycle": 300,
-    "pool_pre_ping": True,
-}
 
-db = SQLAlchemy(app)
-# ======== PERCORSI FILE ========
+# Configura engine options solo se non è SQLite
+if not database_url.startswith("sqlite"):
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "pool_recycle": 300,
+        "pool_pre_ping": True,
+    }
+
+db = SQLAlchemy(app)# ======== PERCORSI FILE ========
 BASE_DIR = r"C:\Users\andre\OneDrive\Desktop\RegistroProf\registro"
 
 FILE_UTENTI = os.path.join(BASE_DIR, "utenti.json")
