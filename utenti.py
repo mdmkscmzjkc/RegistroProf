@@ -627,6 +627,31 @@ def api_registrazioni_gestisci(id):
                 crea_notifica(username=reg["username"], tipo="registrazione", titolo="✅ Registrazione approvata", messaggio="Il tuo account è stato approvato! Ora puoi accedere.", link="/login")
             return jsonify({"success": True, "message": f"Registrazione {data['stato']}"})
         return jsonify({"error": "Stato non valido"}), 400
+# DOPO aver salvato la registrazione, aggiungi questo:
+
+# Se siamo su Render con SQLite, approva automaticamente la registrazione
+if os.getenv("USE_SQLITE") == "true":
+    # Crea direttamente l'utente nella tabella users
+    nuovo_utente = User(
+        username=username,
+        password=password,
+        email=email,
+        nome_cognome=nome_cognome,
+        scuola=scuola,
+        role="user",
+        stato="attivo",
+        account_status="attivo"
+    )
+    db.session.add(nuovo_utente)
+    db.session.commit()
+    
+    return render_template("registrazione.html", 
+                          successo="✅ Registrazione completata! Ora puoi accedere.",
+                          captcha_domanda=session["captcha"]["domanda"])
+else:
+    # Comportamento normale: salva in attesa di approvazione
+    registrazioni = leggi_json(FILE_REGISTRAZIONI)
+    # ... codice esistente ...
 
 @app.route("/api/registrazioni/<int:id>/modifica", methods=["PUT"])
 def api_registrazioni_modifica(id):
