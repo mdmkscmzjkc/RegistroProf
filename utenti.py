@@ -16,11 +16,16 @@ app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "fallback_key_change_in_production")
 
 # ======== CONFIGURAZIONE DATABASE ========
-database_url = os.getenv("DATABASE_URL", "sqlite:///registro_local.db")
+import os
 
-# Render usa postgres://, SQLAlchemy vuole postgresql://
-if database_url.startswith("postgres://"):
-    database_url = database_url.replace("postgres://", "postgresql://", 1)
+# Se USE_SQLITE è impostato, usa SQLite (più semplice per test)
+if os.getenv("USE_SQLITE") == "true":
+    database_url = "sqlite:///registro.db"
+else:
+    # Altrimenti usa PostgreSQL (per produzione)
+    database_url = os.getenv("DATABASE_URL", "sqlite:///registro.db")
+    if database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql://", 1)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
