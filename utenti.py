@@ -1207,9 +1207,11 @@ if __name__ == "__main__":
     if not os.path.exists(FILE_RECUPERO):
         scrivi_json(FILE_RECUPERO, [])
 if __name__ == "__main__":
-    # Inizializza tabelle se usi database
+if __name__ == "__main__":
+    # Crea le tabelle se non esistono
     with app.app_context():
         db.create_all()
+        print("✅ Tabelle database create/verificate!")
     
     # Per sviluppo locale
     app.run(debug=True, host="0.0.0.0", port=5000)
