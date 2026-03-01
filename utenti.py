@@ -1207,9 +1207,10 @@ def api_professori_mod(index):
 @app.route("/debug-crea-utenti")
 def debug_crea_utenti():
     """Crea utenti di test nel database - SOLO PER DEBUG"""
-    # Controlla che sia admin
-    if not admin_required():
-        return "❌ Accesso negato. Solo admin.", 403
+    
+    # 🔧 TEMPORANEO: Commenta questa riga per creare utenti senza login
+    # if not admin_required():
+    #     return "❌ Accesso negato. Solo admin.", 403
     
     try:
         with app.app_context():
@@ -1259,11 +1260,10 @@ def debug_crea_utenti():
                 <li>👤 Utente: <code>testuser</code> / <code>test123</code></li>
             </ul>
             <p><a href="/login">🔐 Vai al Login</a> | <a href="/admin">⚙️ Vai alla Dashboard Admin</a></p>
-            <p style="color:#999;font-size:12px;">⚠️ Rimuovi questa route in produzione!</p>
+            <p style="color:#f44336;font-weight:bold;">⚠️ ROUTE PUBBLICA - Rimuovi il bypass dopo il test!</p>
             """
     except Exception as e:
         return f"❌ Errore: {e}", 500
-
         # ═══════════════════════════════════════════════════════════
 # ROUTE TEST MINIMALISTA (per debug)
 # ═══════════════════════════════════════════════════════════
